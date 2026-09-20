@@ -8,10 +8,9 @@
     cart: [],
     activeProduct: null,
     addToCart(id, name, price) {
-        // Berikan cartId unik agar item yang sama bisa dihapus satu per satu
-        this.cart.push({ id, name, price, cartId: Date.now() + Math.random() });
-        this.activeProduct = id;
-        setTimeout(() => this.activeProduct = null, 500);
+        this.cart.push({ id, name, price, cartId: Date.now() });
+        this.activeProduct = id; // Set produk yang aktif
+        setTimeout(() => this.activeProduct = null, 500); // Hilangkan highlight setelah 0.5 detik
     },
     removeFromCart(cartId) {
         this.cart = this.cart.filter(item => item.cartId !== cartId);
@@ -23,9 +22,9 @@
     
     <div class="grid grid-cols-3 gap-4">
         @foreach ($products as $product)
-            <div class="border rounded-md p-3 cursor-pointer transition-all duration-200 bg-white shadow-sm"
-                 :class="activeProduct === {{ $product->id }} ? 'ring-2 ring-blue-500' : ''"
-                 @click="addToCart({{ $product->id }}, '{{ $product->name }}', {{ $product->price }})">
+    <div class="border rounded-md p-3 cursor-pointer transition-all duration-200"
+        :class="activeProduct === {{ $product->id }} ? 'ring-2 ring-blue-500' : ''"
+        @click="addToCart({{ $product->id }}, '{{ $product->name }}', {{ $product->price }})">
                 <p class="font-medium">{{ $product->name }}</p>
                 <p class="text-sm text-slate-500">Rp {{ number_format($product->price) }}</p>
                 
