@@ -8,4 +8,5 @@
        class="hover:text-blue-300 transition-colors {{ request()->is('transactions*') ? 'text-blue-400 font-semibold underline underline-offset-4' : 'text-slate-300' }}">
        Transaksi
     </a>
+    <a href="{{ route('products.index') }}" class="hover:underline">Produk</a>
 </nav>
