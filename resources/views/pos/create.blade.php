@@ -38,7 +38,10 @@
         @endforeach
     </div>
 
-    
+    <div class="mt-4">
+        {{ $products->links() }}
+    </div>
+
     <div class="mt-6 border-t pt-4">
         <h2 class="font-semibold mb-2">Keranjang Belanja</h2>
         <template x-for="item in cart" :key="item.cartId">
