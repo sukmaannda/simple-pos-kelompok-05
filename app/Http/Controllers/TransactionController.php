@@ -7,6 +7,7 @@ use App\Models\Transaction;
 use App\Http\Requests\StoreTransactionRequest;
 use App\Models\TransactionDetail;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class TransactionController extends Controller
 {
@@ -17,13 +18,24 @@ class TransactionController extends Controller
         return view('pos.create', ['products' => $products]);
     }
 
-    public function store (StoreTransactionRequest $request)
+    public function store(StoreTransactionRequest $request)
     {
         $validated = $request->validated();
 
+        // Validasi stok mencukupi
+        foreach ($validated['items'] as $item) {
+            $product = Product::findOrFail($item['product_id']);
+
+            if ($item['qty'] > $product->stock) {
+                throw ValidationException::withMessages([
+                    'items' => "Stok produk {$product->name} tidak mencukupi. Stok tersedia: {$product->stock}."
+                ]);
+            }
+        }
+
         DB::transaction(function () use ($validated) {
             $transaction = Transaction::create([
-                'user_id' => 1, 
+                'user_id' => 1,
                 'total' => 0,
             ]);
 
@@ -41,6 +53,7 @@ class TransactionController extends Controller
                     'subtotal' => $subtotal,
                 ]);
             }
+
             $transaction->update(['total' => $total]);
         });
 
@@ -48,7 +61,7 @@ class TransactionController extends Controller
             ->route('pos.create')
             ->with('success', 'Transaksi berhasil disimpan.');
     }
-    
+
     public function index()
     {
         $transactions = Transaction::with(['details.product', 'user'])
@@ -60,6 +73,8 @@ class TransactionController extends Controller
 
     public function show(string $id)
     {
-        return "Detail transaksi #{$id}";
+        $transaction = Transaction::with(['details.product', 'user'])->findOrFail($id);
+
+        return view('transactions.show', compact('transaction'));
     }
 }
