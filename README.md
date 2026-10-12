@@ -1,17 +1,18 @@
-#Apakah Validasi Numeric Cukup untuk Mencegah Manipulasi Total?
-#1. Adelia Rizki Eka Putri
+Apakah Validasi Numeric Cukup untuk Mencegah Manipulasi Total?
+
+1. Adelia Rizki Eka Putri
 Jawaban:
 Nggak cukup mengandalkan aturan validasi numeric pada field total yang dikirim dari form masih sangat rawan dan tidak aman dari manipulasi data. Hal ini karena aturan numeric hanya bertugas memastikan bahwa data yang masuk berbentuk angka, tanpa memeriksa apakah nominal tersebut benar sesuai dengan harga asli produk dan jumlah yang dibeli. Penyerang (attacker) bisa dengan mudah mengintersepsi request—misalnya lewat browser developer tools atau perintah Curl—lalu mengubah nilai total dari Rp500.000 menjadi Rp1 sebelum dikirim ke server. Karena angka Rp1 tetap berupa angka, sistem akan menganggapnya valid jika hanya menggunakan aturan numeric.
 
 Oleh karena itu, solusi yang benar adalah dengan menghitung ulang nilai total secara mandiri di sisi server (backend). Server harus mengambil ID produk dan jumlah pesanan yang dikirim pengguna, mencocokkan harga resmi yang tersimpan di dalam basis data, lalu melakukan perkalian harga secara otomatis di backend. Field total sebaiknya tidak lagi dikirimkan atau dipercayai dari input form sisi klien guna mencegah celah manipulasi harga.
 
-#Adinda Luluk Hanifah
+Adinda Luluk Hanifah
 Jawaban:
 
-#Rafi Zeta Fauzan
+Rafi Zeta Fauzan
 Jawaban:
 
-#Sukma Ananda Putri
+Sukma Ananda Putri
 Jawaban:
 Tidak, validasi `numeric` saja tidak cukup untuk mencegah manipulasi nilai total. Validasi tersebut hanya memastikan bahwa data yang dikirim berupa angka, tetapi tidak memastikan bahwa nilai total tersebut benar sesuai dengan harga dan jumlah barang yang dibeli.
 
