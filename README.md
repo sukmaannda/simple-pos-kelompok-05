@@ -10,7 +10,10 @@ Validasi numeric belum cukup untuk melindungi total pembayaran dari manipulasi. 
 
 4. Rafi Zeta Fauzan
 Jawaban:
+Tidak cukup, karena aturan numeric hanya memastikan input berbentuk angka tanpa memverifikasi kebenaran nilainya. Data dari sisi klien mudah dimanipulasi menggunakan browser DevTools atau tools seperti cURL. Sebagai contoh, pembeli bisa mengubah total dari Rp1.000.000 menjadi Rp1.000; karena angka seribu tetap numerik, validasi server akan meloloskannya begitu saja.
 
-5. Sukma Ananda Putri
+Solusi yang tepat adalah tidak mengirimkan field total dari form sama sekali. Backend harus mengambil harga asli produk langsung dari database berdasarkan product_id, lalu menghitung totalnya sendiri di server dengan mengalikan harga tersebut dengan qt
+
+6. Sukma Ananda Putri
 Jawaban:
 Tidak, validasi numeric saja tidak cukup untuk mencegah manipulasi nilai total. Validasi tersebut hanya memastikan bahwa data yang dikirim berupa angka, tetapi tidak memastikan bahwa nilai total tersebut benar sesuai dengan harga dan jumlah barang yang dibeli. Sebagai contoh, jika harga barang Rp50.000 dan jumlah pembelian 2 barang, total yang seharusnya dibayar adalah Rp100.000. Namun, pengguna dapat memanipulasi data dari form dan mengirimkan total sebesar Rp10.000. Nilai tersebut tetap lolos validasi numeric karena masih berupa angka. Oleh karena itu, nilai total sebaiknya dihitung ulang di sisi server berdasarkan harga barang dan jumlah pembelian yang tersimpan atau diperoleh secara tepercaya dari database. Dengan demikian, pengguna tidak dapat menentukan sendiri nilai total yang harus dibayar hanya dengan mengubah data pada form.
