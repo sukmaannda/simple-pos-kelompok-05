@@ -46,11 +46,24 @@ Hasil yang Diharapkan:
 - Akses ke URL /products atau /categories ditolak dan muncul pesan error 403 Forbidden.
 
 
-3. Skenario Uji Peran Tamu (Guest / Belum Login)
+3. Skenario Uji Peran Manager
+Langkah:
+- Akses halaman /login.
+- Masukkan email manager@pos.test dan kata sandi password, lalu klik tombol Masuk.
+- Amati bilah navigasi di bagian atas.
+- Buka URL /transactions, lalu ketik URL /products secara manual di address bar browser.
+
+Hasil yang Diharapkan:
+- Login berhasil dan mengarah ke halaman POS.
+- Navigasi menampilkan menu Kasir dan Transaksi, tetapi menu Produk dan Kategori disembunyikan.
+- Halaman Transaksi dapat dibuka dengan normal.
+- Akses ke URL /products ditolak dan muncul pesan error 403 Forbidden.
+
+
+4. Skenario Uji Peran Tamu (Guest / Belum Login)
 Langkah:
 - Pastikan status akun sudah logout atau gunakan mode Incognito di browser.
 - Buka langsung URL /pos, /transactions, atau /products.
 
 Hasil yang Diharapkan:
 - Sistem menolak akses dan langsung mengalihkan (redirect) kembali ke halaman /login.
-
