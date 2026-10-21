@@ -17,3 +17,40 @@ Solusi yang tepat adalah tidak mengirimkan field total dari form sama sekali. Ba
 6. Sukma Ananda Putri
 Jawaban:
 Tidak, validasi numeric saja tidak cukup untuk mencegah manipulasi nilai total. Validasi tersebut hanya memastikan bahwa data yang dikirim berupa angka, tetapi tidak memastikan bahwa nilai total tersebut benar sesuai dengan harga dan jumlah barang yang dibeli. Sebagai contoh, jika harga barang Rp50.000 dan jumlah pembelian 2 barang, total yang seharusnya dibayar adalah Rp100.000. Namun, pengguna dapat memanipulasi data dari form dan mengirimkan total sebesar Rp10.000. Nilai tersebut tetap lolos validasi numeric karena masih berupa angka. Oleh karena itu, nilai total sebaiknya dihitung ulang di sisi server berdasarkan harga barang dan jumlah pembelian yang tersimpan atau diperoleh secara tepercaya dari database. Dengan demikian, pengguna tidak dapat menentukan sendiri nilai total yang harus dibayar hanya dengan mengubah data pada form.
+
+## Skenario Pengujian Manual (Otorisasi Akses)
+
+1. Skenario Uji Peran Admin
+Langkah:
+- Akses halaman /login.
+- Masukkan email admin@pos.test dan kata sandi password, lalu klik tombol Masuk.
+- Amati bilah navigasi di bagian atas.
+- Coba buka URL /products dan /categories.
+
+Hasil yang Diharapkan:
+- Login berhasil dan mengarah ke halaman POS.
+- Navigasi menampilkan menu Kasir, Transaksi, Produk, Kategori, serta nama dan peran Admin  Kafe (admin).
+- Halaman Produk dan Kategori dapat dibuka dengan normal.
+
+
+2. Skenario Uji Peran Kasir
+Langkah:
+- Akses halaman /login.
+- Masukkan email kasir@pos.test dan kata sandi password, lalu klik tombol Masuk.
+- Amati bilah navigasi di bagian atas.
+- Ketik URL /products atau /categories secara manual di address bar browser.
+
+Hasil yang Diharapkan:
+- Login berhasil dan mengarah ke halaman POS.
+- Navigasi hanya menampilkan menu Kasir dan Transaksi (menu Produk dan Kategori disembunyikan).
+- Akses ke URL /products atau /categories ditolak dan muncul pesan error 403 Forbidden.
+
+
+3. Skenario Uji Peran Tamu (Guest / Belum Login)
+Langkah:
+- Pastikan status akun sudah logout atau gunakan mode Incognito di browser.
+- Buka langsung URL /pos, /transactions, atau /products.
+
+Hasil yang Diharapkan:
+- Sistem menolak akses dan langsung mengalihkan (redirect) kembali ke halaman /login.
+
