@@ -29,6 +29,6 @@ Route::middleware('auth')->group(function () {
     });
 
     Route::get('/transactions', [TransactionController::class, 'index'])
-        ->middleware('role:admin,manager')
+        ->middleware('role:admin,kasir,manager')
         ->name('transactions.index');
 });
