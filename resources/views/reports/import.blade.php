@@ -11,6 +11,20 @@
 </div>
 @endif
 
+@if ($errors->any())
+    <div class="bg-red-50 text-red-700 p-3 rounded-md mb-4">
+        @foreach ($errors->all() as $error)
+            <p>{{ $error }}</p>
+        @endforeach
+    </div>
+@endif
+
+@if ($errors->any())
+    <div class="bg-red-50 text-red-700 p-3 rounded-md mb-4">
+        {{ $errors->first() }}
+    </div>
+@endif
+
 <form method="POST" action="{{ route('import.store') }}" enctype="multipart/form-data" class="max-w-md">
     @csrf
     <label class="block mb-3">
