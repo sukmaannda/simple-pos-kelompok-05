@@ -24,4 +24,15 @@ class RoleAuthorizationTest extends TestCase
             ->get('/products')
             ->assertForbidden();
     }
+
+    public function test_cashier_can_still_view_transactions(): void
+    {
+        $this->withoutVite();
+
+        $cashier = User::factory()->create(['role' => 'kasir']);
+
+        $this->actingAs($cashier)
+            ->get('/transactions')
+            ->assertOk();
+    }
 }
