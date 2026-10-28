@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Models\ImportError;
 use App\Models\Product;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
@@ -16,16 +17,33 @@ class ProcessProductImport implements ShouldQueue
     public array $backoff = [10, 60];
     public int $timeout = 60;
 
-    public function __construct(private string $csvPath) {}
+    public function __construct(
+        private string $csvPath,
+        private string $batchId,
+    ) {}
 
     public function handle(): void
     {
-        $lines = file(Storage::path($this->csvPath), FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-        $rows = array_map('str_getcsv', $lines);
-        $header = array_shift($rows);
+        // Bersihkan error dari attempt sebelumnya supaya retry tidak mencatat dobel.
+        ImportError::where('batch_id', $this->batchId)->delete();
 
-        foreach ($rows as $row) {
+        // Tanpa FILE_SKIP_EMPTY_LINES: nomor baris tetap sesuai file asli.
+        $lines = file(Storage::path($this->csvPath), FILE_IGNORE_NEW_LINES);
+        $header = str_getcsv(array_shift($lines) ?? '');
+        $header[0] = ltrim($header[0] ?? '', "\xEF\xBB\xBF"); // buang BOM dari Excel
+        $header = array_map('trim', $header);
+
+        foreach ($lines as $index => $line) {
+            $rowNumber = $index + 2; // baris 1 = header
+
+            if (trim($line) === '') {
+                continue;
+            }
+
+            $row = str_getcsv($line);
+
             if (count($row) !== count($header)) {
+                $this->recordError($rowNumber, $row, 'Jumlah kolom tidak sesuai dengan header.');
                 continue;
             }
 
@@ -36,6 +54,7 @@ class ProcessProductImport implements ShouldQueue
             ]);
 
             if ($validator->fails()) {
+                $this->recordError($rowNumber, $row, implode(' ', $validator->errors()->all()));
                 continue;
             }
 
@@ -48,5 +67,15 @@ class ProcessProductImport implements ShouldQueue
         }
 
         Storage::delete($this->csvPath);
+    }
+
+    private function recordError(int $rowNumber, array $row, string $message): void
+    {
+        ImportError::create([
+            'batch_id' => $this->batchId,
+            'row_number' => $rowNumber,
+            'row_data' => $row,
+            'message' => $message,
+        ]);
     }
 }

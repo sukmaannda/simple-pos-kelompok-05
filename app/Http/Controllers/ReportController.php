@@ -5,12 +5,14 @@ namespace App\Http\Controllers;
 use App\Exports\SalesReportExport;
 use App\Jobs\ProcessProductImport;
 use App\Models\Category;
+use App\Models\ImportError;
 use App\Models\Transaction;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 use Maatwebsite\Excel\Facades\Excel;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -77,9 +79,17 @@ class ReportController extends Controller
 
         return $pdf->download('laporan-penjualan.pdf');
     }
-    public function importForm(): View
+
+    public function importForm(Request $request): View
     {
-        return view('reports.import');
+        $batch = $request->query('batch');
+
+        return view('reports.import', [
+            'batch' => $batch,
+            'errors_list' => $batch
+                ? ImportError::where('batch_id', $batch)->orderBy('row_number')->get()
+                : collect(),
+        ]);
     }
 
     public function import(Request $request): RedirectResponse
@@ -89,13 +99,14 @@ class ReportController extends Controller
         ]);
 
         $path = $request->file('csv')->store('imports');
+        $batchId = (string) Str::uuid();
 
-        ProcessProductImport::dispatch($path);
+        ProcessProductImport::dispatch($path, $batchId);
 
-        return back()->with('success', 'Import sedang diproses di background.');
+        return redirect()
+            ->route('import.create', ['batch' => $batchId])
+            ->with('success', 'Import sedang diproses di background.');
     }
-
-    // importForm() dan import() tidak berubah
 
     private function resolveDateRange(Request $request): array
     {
@@ -107,11 +118,13 @@ class ReportController extends Controller
 
     private function resolveCategoryId(Request $request): ?int
     {
-        $validated = $request->validate([
-            'category_id' => ['nullable', 'integer', 'exists:categories,id'],
-        ]);
+        $id = $request->integer('category_id');
 
-        return isset($validated['category_id']) ? (int) $validated['category_id'] : null;
+        if ($id <= 0 || ! Category::whereKey($id)->exists()) {
+            return null;
+        }
+
+        return $id;
     }
 
     private function filteredQuery($from, $to, ?int $categoryId = null): Builder
@@ -119,7 +132,7 @@ class ReportController extends Controller
         return Transaction::with('user')
             ->whereBetween('created_at', [$from, $to])
             ->when($categoryId, function (Builder $q, int $id) {
-                $q->whereHas('details.product', fn($p) => $p->where('category_id', $id));
+                $q->whereHas('details.product', fn ($p) => $p->where('category_id', $id));
             });
     }
 }
