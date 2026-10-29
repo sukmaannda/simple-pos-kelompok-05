@@ -67,3 +67,13 @@ Langkah:
 
 Hasil yang Diharapkan:
 - Sistem menolak akses dan langsung mengalihkan (redirect) kembali ke halaman /login.
+
+
+
+5. Identifikasi satu proses lain di Simple POS yang menurutmu layak dipindah ke queued job, dan jelaskan alasannya di README proyek. 
+Proses yang diidentifikasi: Pengiriman Nota/Struk Digital via Email (atau WhatsApp API) Setelah Transaksi Kasir Berhasil
+
+Alasan:
+1. Mencegah Latensi pada Halaman Kasir: Proses pengiriman email membutuhkan koneksi ke server SMTP pihak ketiga. Jika dijalankan secara synchronous saat transaksi disimpan, kasir harus menunggu beberapa detik hingga koneksi SMTP selesai, yang akan memperlambat antrean pembayaran.
+2. Resiliensi dan Toleransi Kegagalan (Error Handling): Apabila terjadi network timeout atau server SMTP sedang down, proses transaksi penjualan utama di kasir tetap sukses dan tidak terbatalkan.
+3. Fitur Otomatisasi Ulang (Retry Mechanism): Dengan memindahkannya ke queued job, Laravel dapat mengonfigurasi properti $tries, $backoff, dan $timeout untuk mencobanya kembali secara berkala di background tanpa mengganggu pengguna.
