@@ -17,6 +17,8 @@ use Illuminate\View\View;
 use Maatwebsite\Excel\Facades\Excel;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use Illuminate\Support\Facades\DB;
+
 
 class ReportController extends Controller
 {
@@ -66,20 +68,28 @@ class ReportController extends Controller
     public function exportPdf(Request $request): Response
     {
         [$from, $to] = $this->resolveDateRange($request);
-        $categoryId = $this->resolveCategoryId($request);
+
+    $topProducts = DB::table('transaction_details')
+        ->join('transactions', 'transaction_details.transaction_id', '=', 'transactions.id')
+        ->join('products', 'transaction_details.product_id', '=', 'products.id')
+        ->whereBetween('transactions.created_at', [$from, $to])
+        ->select('products.name', DB::raw('SUM(transaction_details.qty) as total_qty'))
+        ->groupBy('products.id', 'products.name')
+        ->orderByDesc('total_qty')
+        ->limit(5)
+        ->get();
 
         $pdf = Pdf::loadView('reports.pdf', [
-            'totalPenjualan' => $this->filteredQuery($from, $to, $categoryId)->sum('total'),
-            'jumlahTransaksi' => $this->filteredQuery($from, $to, $categoryId)->count(),
-            'transactions' => $this->filteredQuery($from, $to, $categoryId)->latest()->limit(50)->get(),
+            'totalPenjualan' => $this->filteredQuery($from, $to)->sum('total'),
+            'jumlahTransaksi' => $this->filteredQuery($from, $to)->count(),
+            'transactions' => $this->filteredQuery($from, $to)->latest()->limit(50)->get(),
+            'topProducts' => $topProducts,
             'from' => $from->toDateString(),
             'to' => $to->toDateString(),
-            'categoryName' => $categoryId ? Category::find($categoryId)?->name : null,
         ]);
 
         return $pdf->download('laporan-penjualan.pdf');
-    }
-
+}
     public function importForm(Request $request): View
     {
         $batch = $request->query('batch');
