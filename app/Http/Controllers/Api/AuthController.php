@@ -19,8 +19,12 @@ class AuthController extends Controller
             return response()->json(['message' => 'Kredensial tidak valid.'], 401);
         }
 
-        $user = Auth::user();
-        $token = $user->createToken('mobile-kasir')->plainTextToken;
+        $user = $request->user();
+        $token = $user->createToken(
+            'mobile-kasir',
+            ['products:read', 'transactions:create', 'transactions:read'],
+            now()->addDay(),
+        )->plainTextToken;
 
         return response()->json(['token' => $token]);
     }
