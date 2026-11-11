@@ -71,3 +71,10 @@ class ApiClientDemo extends Command
 
         match ($transaction->status()) {
             201 => $this->info('Transaksi tersimpan: '.json_encode($transaction->json('data'))),
+            422 => $this->error('Transaksi ditolak: '.json_encode($transaction->json())),
+            default => $this->error('Transaksi gagal dengan status HTTP '.$transaction->status().'.'),
+        };
+
+        return $transaction->successful() ? self::SUCCESS : self::FAILURE;
+    }
+}
