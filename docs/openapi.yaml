@@ -1,0 +1,172 @@
+openapi: 3.0.0
+info:
+  title: Simple POS API
+  version: 1.0.0
+paths:
+  /api/v1/login:
+    post:
+      summary: Login dan dapatkan token
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email: { type: string }
+                password: { type: string }
+      responses:
+        '200':
+          description: Token berhasil diterbitkan
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token: { type: string }
+        '401':
+          description: Kredensial tidak valid
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string }
+  /api/v1/products:
+    get:
+      summary: Ambil daftar produk
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: category_id
+          required: false
+          schema:
+            type: integer
+          description: Filter berdasarkan ID kategori yang ada.
+        - in: query
+          name: q
+          required: false
+          schema:
+            type: string
+            minLength: 2
+          description: Cari nama produk; minimal 2 karakter.
+        - in: query
+          name: sort
+          required: false
+          schema:
+            type: string
+            enum: [name, -name, price, -price]
+            default: name
+          description: Urutkan berdasarkan nama atau harga. Awalan tanda minus berarti urutan menurun.
+        - in: query
+          name: page
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+          description: Nomor halaman hasil.
+        - in: query
+          name: per_page
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 15
+          description: Jumlah produk per halaman.
+      responses:
+        '200':
+          description: Daftar produk
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id: { type: integer }
+                        name: { type: string }
+                        price: { type: integer }
+                        category: { type: string }
+                  links:
+                    type: object
+                    description: Tautan navigasi pagination.
+                  meta:
+                    type: object
+                    properties:
+                      current_page: { type: integer }
+                      from: { type: integer, nullable: true }
+                      last_page: { type: integer }
+                      per_page: { type: integer }
+                      to: { type: integer, nullable: true }
+                      total: { type: integer }
+        '401':
+          description: Token tidak ada atau tidak valid
+        '422':
+          description: Parameter query tidak valid.
+  /api/v1/categories:
+    get:
+      summary: Ambil daftar kategori
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Daftar kategori
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id: { type: integer }
+                        name: { type: string }
+        '401':
+          description: Token tidak ada atau tidak valid
+  /api/v1transactions:
+    post:
+      summary: Buat transaksi baru
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                items:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      product_id: { type: integer }
+                      qty: { type: integer }
+      responses:
+        '201':
+          description: Transaksi berhasil disimpan
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      id: { type: integer }
+                      total: { type: integer }
+        '401':
+          description: Token tidak ada atau tidak valid
+        '422':
+          description: Input tidak valid, misalnya product_id tidak ditemukan
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
