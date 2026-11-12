@@ -12,6 +12,10 @@ Route::get('/', function () {
     return redirect()->route('pos.create');
 });
 
+Route::get('/info', function () {
+    return view('info');
+})->name('info');
+
 Route::middleware('guest')->group(function () {
     Route::get('/login', [LoginController::class, 'create'])->name('login');
     Route::post('/login', [LoginController::class, 'store']);
@@ -35,7 +39,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/reports/export/pdf', [ReportController::class, 'exportPdf'])->name('reports.export.pdf');
         Route::get('/import', [ReportController::class, 'importForm'])->name('import.create');
         Route::post('/import', [ReportController::class, 'import'])->name('import.store');
-        
+
         Route::get('/quick-categories', [QuickCategoryController::class, 'index'])->name('quick-categories.index');
         Route::post('/quick-categories', [QuickCategoryController::class, 'store'])->name('quick-categories.store');
     });
