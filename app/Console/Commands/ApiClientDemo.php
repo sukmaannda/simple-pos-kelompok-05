@@ -15,7 +15,7 @@ class ApiClientDemo extends Command
      *
      * @var string
      */
-    protected $signature = 'api:demo';
+    protected $signature = 'api:demo {--salah : Coba login dengan kata sandi salah lebih dulu}';
 
     /**
      * The console command description.
@@ -36,9 +36,12 @@ class ApiClientDemo extends Command
             || in_array($e->response->status(), [429, 502, 503, 504]);
         $backoff = fn (int $attempt) => $attempt * 1000;
 
+        // dengan --salah, login memakai kata sandi yang sengaja keliru
+        $password = $this->option('salah') ? 'salah' : 'password';
+
         $login = Http::acceptJson()->post("{$baseUrl}/login", [
             'email' => 'kasir@pos.test',
-            'password' => 'password',
+            'password' => $password,
         ]);
 
         if ($login->failed()) {
